@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>OffscreenCanvas API</title>
+    <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+<header>
+    <div id="warning-support">
+    </div>
+</header>
+
+<main>
+    <h1>Isobenefit Cities</h1>
+    <p>
+        This demo has been build to showcase the power of the OffscreenCanvas
+        API and Workers.<br/>
+        To learn more about it, please check the origin blog post here.<br/>
+        You can also check MDM for more complete information by
+        <a
+                href="https://developer.mozilla.org/en-US/docs/Web/API/OffscreenCanvas/OffscreenCanvas"
+        >clicking here.</a
+        >
+    </p>
+
+    <button onclick="run_simulation()">Run simulation</button>
+
+    <div class="visualisation">
+        <canvas id="canvas_worker" width="300" height="300"></canvas>
+    </div>
+</main>
+
+<footer>
+    <p>
+        Thanks for playing with this demo ....
+    </p>
+    <p>
+        Check my repository
+        <a href="https://....">here</a>
+    </p>
+</footer>
+
+<script>
+
+    let cWorker = document
+        .getElementById("canvas_worker")
+        .transferControlToOffscreen();
+    let worker = new Worker("worker.js");
+
+    window.x = worker;
+    //Check browser compatibility
+
+    document
+        .querySelector("#warning-support")
+        .classList.add(
+        "OffscreenCanvas" in window ? "supported" : "not-supported"
+    );
+    document.querySelector("#warning-support").innerHTML =
+        "OffscreenCanvas" in window
+            ? "Yay! your browser supports the OffscreenCanvas API "
+            : "Oh! Looks like your browser does not support the OffscreenCanvas :(";
+
+
+    let transferred = false;
+
+    function run_simulation() {
+
+        // Using the OffscreenCanvas API and starting the worker
+        if (!transferred) {
+            worker.postMessage({
+                canvas: cWorker, params: {
+                    T_star: 10
+                    , build_probability: 0.5
+                    , isolated_centrality_probability: 0.1
+                    , max_ab_km2: 10000
+                    , prob_distribution: [0.7, 0.3, 0.0]
+                    , population_density: {
+                        high: 1,
+                        medium: 0.1,
+                        low: 0.01,
+                        empty: 0
+                    }
+                }
+            }, [
+                cWorker,
+            ]);
+        } else {
+            // clean and re-run
+            worker.postMessage({
+                command: "re-run",
+                params: {
+                    T_star: 10
+                    , build_probability: 0.5
+                    , isolated_centrality_probability: 0.1
+                    , max_ab_km2: 10000
+                    , prob_distribution: [0.7, 0.3, 0.0]
+                    , population_density: {
+                        high: 1,
+                        medium: 0.1,
+                        low: 0.01,
+                        empty: 0
+                    }
+                }
+            }, []);
+        }
+
+        transferred = true;
+
+
+    }
+</script>
+</body>
+</html>
